@@ -1,21 +1,11 @@
-# 旅遊行程網頁 - 功能需求記錄
+# 🔧 功能需求與技術規格書 (Feature Log & Technical Specifications)
 
-> 記錄所有旅程行程規劃網頁的功能演進、已實現需求與待辦功能。
-> 最後更新：2026-07-06
-
----
-
-## 📁 專案列表
-
-| 專案 | Repo | GitHub Pages | 描述 |
-|------|------|-------------|------|
-| 美西 16 日自由行 | — | [2026-la.vercel.app](https://2026-la.vercel.app/) | 原始參考版本 |
-| 日本 10 日自由行 | [japan-trip](https://github.com/marksu1122/japan-trip) | [marksu1122.github.io/japan-trip](https://marksu1122.github.io/japan-trip/) | 6月版本 |
-| 北九州 9 日自駕 | [japan-trip-sep-2026](https://github.com/marksu1122/japan-trip-sep-2026) | [marksu1122.github.io/japan-trip-sep-2026](https://marksu1122.github.io/japan-trip-sep-2026/) | 9月版本（本 repo） |
+> **核心定位**：記錄已實現的功能列表，並定義網頁開發的 HTML/CSS DOM 結構、JavaScript 邏輯與 API 整合規格。  
+> 旅遊規劃與 SOP 指南請參閱 [`BLUEPRINT.md`](./BLUEPRINT.md)。
 
 ---
 
-## ✅ 已實現功能（來自舊對話記錄）
+## 1. ✅ 已實現功能清單
 
 ### 🎨 UI / 視覺設計
 - [x] 參考美西版本 (2026-la.vercel.app) 的整體視覺風格
@@ -34,7 +24,7 @@
 - [x] 事件卡片支援多種類型：`food` / `sight` / `buy` / `booking` / `transport` / `flight` / `hotel`
 - [x] 彩色 Badges 標籤（食 / 景 / 購 / 訂 / 交通等）
 - [x] `tip` 可展開/收合的藍色詳細攻略框 (`fas fa-info-circle`)
-- [x] `notice` 紅色警告框（重要提醒、地雷避坑）
+- [x] `notice` 雙色警告框（特別重要為紅字邊框 / 一般警告為黃字邊框，底色皆為淡米色）
 - [x] 上一天 / 下一天按鈕導航
 - [x] 自動跳轉到「今天」的日期（若在旅程期間）
 
@@ -47,77 +37,125 @@
 
 ### 🛒 購物清單
 - [x] 分類清單（藥妝 / 零食 / 動漫 / 服飾等）
-- [x] 每項可打勾確認
-- [x] 附數量欄位
+- [x] 每項可打勾確認，無預填項目（使用者自訂）
 
 ### 🧳 行李清單
 - [x] 分類清單（證件 / 金錢 / 衣物 / 藥品 / 3C / 盥洗）
-- [x] 每項可打勾確認
-- [x] 依旅程季節客製化（6月梅雨季 / 9-10月初秋）
+- [x] 每項可打勾確認，根據季節/成員/目的地動態推薦
 
 ### ✅ 注意事項代辦清單
 - [x] 分階段提醒（緊急 / 出發前 1-2 個月 / 出發前 1-2 週 / 機上）
 - [x] **勾選後自動儲存進度** (`localStorage`)，重開網頁不會消失
-- [x] 「緊急」紅色 Badge 標記
-
-### 🚗 自駕頁面
-- [x] 每日自駕路線概覽
-- [x] 重點路段資訊（高速公路名稱、車程、收費）
-- [x] 警告框（塞車時段、停車建議、路況注意）
-
-### 🏨 訂單資訊頁
-- [x] 航班資訊（去程 / 回程）
-- [x] 住宿清單（含連結、訂單號）
-- [x] 租車資訊（取還車地點、車型、費用）
-
-### 🔧 技術 / 維護
-- [x] GitHub 版本控管
-- [x] GitHub Pages 自動部署（push 後 1-2 分鐘生效）
-- [x] `replace_itinerary.py` Python 腳本方便更新行程資料
+- [x] 「緊急」紅色 Badge 標記，完全與行程事件預訂關聯生成
 
 ---
 
-## 🔄 各旅程客製化差異
+## 2. 🩻 HTML/CSS 頁面架構規格
 
-| 功能 | 日本 6 月版 | 北九州 9 月版 |
-|------|-----------|------------|
-| 主題色 | Sakura 粉紅 `#f43f5e` | Autumn 橘色 `#f97316` |
-| 動畫 | 🌸 飄落櫻花 | 🍁🍂 飄落楓葉 |
-| 人數 | 未特別標示 | **6 人同行**（含注意事項）|
-| 行程天數 | 10 天 | 9 天 |
-| 氣候提醒 | 6 月梅雨季 | 9-10 月初秋 |
-| localStorage key | `notes_chk_` | `sep26_chk_` |
+網頁採用單一檔案單頁式應用（Single Page Application, SPA），以下為主要 DOM 結構：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>旅程名稱</title>
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 定義字體、橫向捲動條隱藏與葉片下落動畫 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fall {
+            0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(420deg); opacity: 0; }
+        }
+        .leaf {
+            position: fixed; top: -20px; font-size: 1.2rem;
+            animation: fall linear infinite; pointer-events: none; z-index: 0;
+        }
+    </style>
+</head>
+<body class="text-gray-800 pb-16 relative">
+    <!-- Header 區塊 (包含標題、副標題與 Tab 切換列) -->
+    <header class="pt-6 pb-3 text-center px-3 relative z-10">...</header>
+
+    <!-- 行程檢視區塊 (View 1) -->
+    <main id="view-itinerary" class="block relative z-10">
+        <!-- 橫向日期導航列 -->
+        <div id="date-nav">...</div>
+        <!-- 每日行程主卡片 -->
+        <div id="main-card-content">
+            <!-- 動態生成事件清單 -->
+            <div id="card-events" class="space-y-4"></div>
+        </div>
+    </main>
+
+    <!-- 其他檢視區塊 (預設隱藏 class="hidden") -->
+    <section id="view-tools" class="hidden">...</section>
+    <section id="view-transport" class="hidden">...</section>
+    <section id="view-shopping" class="hidden">...</section>
+    <section id="view-luggage" class="hidden">...</section>
+    <section id="view-notes" class="hidden">...</section>
+</body>
+</html>
+```
 
 ---
 
-## 💡 未來可新增功能（Backlog）
+## 3. ⚙️ JavaScript 核心控制邏輯
 
-- [ ] **預算計算器** — 各費用分類（交通 / 住宿 / 餐飲 / 購物），自動換算台幣
-- [ ] **地圖整合** — 每日行程對應 Google Maps 路線連結
-- [ ] **6人費用分攤計算器** — 自動計算共同費用每人金額
-- [ ] **照片相簿** — 旅遊照片上傳展示
-- [ ] **離線 PWA** — Service Worker 讓手機可以離線使用
-- [ ] **多語言** — 日文 / 英文版介面切換
-- [ ] **訂單掃 QR Code** — 掃描後自動帶入訂單資訊
-- [ ] **主頁 Portal** — 所有旅程的統一入口頁面
+### 3.1 視圖切換 (Tab Navigation)
+透過控制 `hidden` 與 `block` 類別，實現秒級無縫切換視圖：
+```javascript
+function switchTab(tabId) {
+    const views = ['itinerary','tools','transport','shopping','luggage','notes'];
+    views.forEach(v => {
+        document.getElementById('view-' + v).classList.replace('block', 'hidden');
+        document.getElementById('tab-' + v).classList.remove('active');
+    });
+    document.getElementById('view-' + tabId).classList.replace('hidden', 'block');
+    document.getElementById('tab-' + tabId).classList.add('active');
+}
+```
+
+### 3.2 即時天氣 API 整合 (Open-Meteo)
+* **資料請求**：每天讀取對應城市的 `dayCoordinates` (緯度/經度)，動態向 API 發送請求。
+* **快取機制**：使用全域 `weatherCache` 保存已請求的數據，避免多天切換時重複呼叫 API。
+* **歷史數據備用**：當前日期大於系統預報極限（16天）或請求失敗時，靜態顯示 `itineraryData` 中的預設歷史均溫。
+
+### 3.3 代辦清單存儲機制 (LocalStorage)
+所有注意事項代辦清單項目透過 `toggleNotesCheck(id)` 進行狀態管理，並直接存入 `localStorage`，確保跨瀏覽器會話不會丟失狀態：
+```javascript
+function toggleNotesCheck(id) {
+    const chk = document.getElementById('sep26_chk_' + id);
+    const lbl = document.getElementById('sep26_lbl_' + id);
+    if (chk && lbl) {
+        localStorage.setItem('sep26_chk_' + id, chk.checked);
+        if (chk.checked) {
+            lbl.classList.add('line-through', 'text-gray-400');
+        } else {
+            lbl.classList.remove('line-through', 'text-gray-400');
+        }
+    }
+}
+```
 
 ---
 
-## 🔗 更新流程
+## 4. 📝 部署與自動化工作流
 
-每次修改行程後，執行以下指令推送到 GitHub Pages：
+本專案採 GitHub Pages 靜態網站代管，任何程式碼更新或行程變更，請依循以下部署方式：
 
+### 4.1 Git 手動部署
 ```powershell
-# 在 japan-trip-sep-2026 目錄下
 git add .
-git commit -m "update: 說明修改內容"
+git commit -m "feat(itinerary): 異動內容描述"
 git push
 ```
+GitHub Action 會自動觸發部署，約 **1-2 分鐘** 內生效。
 
-或使用 Python 腳本更新行程資料：
-```powershell
-python replace_itinerary.py
-git add .; git commit -m "update: 更新行程資料"; git push
-```
-
-GitHub Pages 約 **1-2 分鐘**後自動生效。若看到舊版，按 `Ctrl + Shift + R` 強制重新整理。
+### 4.2 Python 行程更新腳本 (`replace_itinerary.py`)
+若行程資料過於龐大，可使用同目錄下的 Python 腳本，抽離 `itineraryData` 至獨立 json/js 檔案後，自動替換並推送到遠端倉庫。

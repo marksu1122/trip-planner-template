@@ -1,215 +1,118 @@
-# 旅遊行程規劃網頁 — 完整建置藍圖
+# 🗺️ 旅遊規劃藍圖 (Travel Planning Blueprint)
 
-> **用途**：此文件是完整的技術規格書。  
-> 根據本文件，可以從零開始建立一個功能完整、設計精美的旅遊行程規劃單頁網頁（SPA）。  
-> 不需要任何框架或後端，只需要一個 `index.html` 檔案。
-
----
-
-## 1. 專案概覽
-
-### 1.1 目標
-一個**行動優先**的旅遊行程規劃網頁，讓旅伴可以：
-- 瀏覽每日行程（含景點攻略、警告提醒）
-- 查看訂單憑證（航班、住宿、租車）
-- 管理購物清單、行李清單
-- 勾選行前代辦事項（進度自動儲存）
-- 查看自駕路線規劃
-
-### 1.2 技術棧
-```
-語言：HTML5 + Vanilla JavaScript + CSS
-樣式：Tailwind CSS (CDN)
-圖示：FontAwesome 6.4.0 (CDN)
-字體：Google Fonts (Inter + Noto Serif TC)
-API：Open-Meteo（即時天氣預報，免費無需 API Key）
-部署：GitHub Pages（push 後自動更新）
-```
-
-### 1.3 檔案結構
-```
-project-name/
-├── index.html          ← 唯一的程式檔案，所有功能都在此
-├── FEATURES.md         ← 功能需求記錄
-├── BLUEPRINT.md        ← 本文件（建置藍圖）
-└── replace_itinerary.py ← 選用：用 Python 腳本批次更新行程資料
-```
+> **核心定位**：本文件定義了 AI 行程規劃師的核心原則、資料合約與作業流程。  
+> 任何新旅程的開啟與景點異動，皆必須嚴格遵循此藍圖。  
+> 程式碼實作與 HTML 骨架細節請參閱 [`FEATURES.md`](./FEATURES.md)。
 
 ---
 
-## 2. 設計系統
+## 1. 專業旅遊規劃師核心原則
 
-### 2.1 主題色（依旅程調整）
+作為專業規劃師，在編排行程時，AI 必須主動思考以下 6 個維度，而非被動填寫行程：
 
-每個旅程選一個主題色系：
+### 1.1 旅遊風格與節奏偏好 (Pace & Style)
+* **天數與體力平衡**：分析每日景點步行總量。
+* **特種兵 vs 悠閒度假**：若行程過密（每日大景點超過 3 個），主動提示超時風險。
+* **購物時間分配**：遇到大型商圈（博多天神、小倉等）須預留 3-4 小時空檔，並提醒行李限重。
 
-| 旅程類型 | 主色 | 淺色背景 | Tab Active | CSS 變數 |
-|---------|------|---------|-----------|---------|
-| 春季日本（櫻花）| `#f43f5e` | `#fff0f5` | `#111827` | `--sakura` |
-| 秋季日本（楓葉）| `#f97316` | `#fff7ed` | `#c2410c` | `--autumn` |
-| 美西藍色系 | `#3b82f6` | `#eff6ff` | `#1d4ed8` | `--ocean` |
-| 自訂 | 任意 HSL 色值 | 對應淺色 | 深色版本 | 自訂 |
+### 1.2 同行成員照顧 (Accessibility)
+* **長輩同行**：嚴禁排入連續爬坡、無電梯地鐵轉乘。每 2 小時必須排入坐下休息、喝茶或上廁所。
+* **幼童同行**：標註推車友善路線、哺乳室位置，並避開深夜營業的居酒屋/酒吧。
+* **飲食限制**：主動確認團員過敏源、素食、不吃生食等習慣，餐廳規劃前完成排查。
 
-### 2.2 背景漸層
-```css
-/* 春季版 */
-background: linear-gradient(135deg, #fff0f5 0%, #ffffff 40%, #ffffff 60%, #f0f4ff 100%);
+### 1.3 預算區間與解鎖體驗 (Budget & Highlights)
+* 分為小資、舒適、輕奢三級。
+* 遇到具代表性體驗（如：由布院溫泉一泊二食、高千穗峽划船），主動提議，分析預算加幅以供決策。
 
-/* 秋季版 */
-background: linear-gradient(135deg, #fff7ed 0%, #ffffff 40%, #ffffff 60%, #fdf4ff 100%);
+### 1.4 季節限定與在地節慶 (Seasonality & Events)
+* 根據日期，主動查閱當地**季節限定景觀**（櫻花、紅葉、點燈、花火大會、週末市集）。
+* 遇限定節慶，主動詢問使用者是否微調行程配合。
+
+### 1.5 路線流向優化 (Route Optimization)
+* **拒絕折返跑**：路線走向須順暢（自駕避開上下班塞車城市，大眾運輸配合特急时刻表）。
+* **首尾日保守原則**：抵達日（出關、取車）與回程日（去機場、還車）行程需極度保守，預留充足緩衝時間。
+
+### 1.6 天氣與雨天備案 (Weather & Backups)
+* 戶外景點（如阿蘇火山、高千穗峽、九重夢大吊橋）必須在網頁中主動標註 **「雨天 Plan B 備案」**（改去室內商場、博物館、或足湯館）。
+
+---
+
+## 2. 新專案啟動標準流程
+
+### 2.1 啟動必問問卷
+在建立新專案前，必須先向使用者確認以下 9 大問題：
+```
+1. 出發地 & 目的地：
+2. 旅遊天數：
+3. 旅遊日期：
+4. 同行成員：(人數與組成，如：2長輩4中青)
+5. 交通資訊：(全程自駕 / 部分租車 / 全程大眾運輸)
+6. 路線資訊：(例如：福岡進出順時針環島)
+7. 住宿資訊：(已訂妥或待推薦)
+8. 必去景點/活動：
+9. 必吃美食：
 ```
 
-### 2.3 字體
-```html
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
-```
-- **主字體**：`Inter`（UI 文字）
-- **標題字體**：`Noto Serif TC`（中文標題，class: `font-serif-tc`）
+### 2.2 提案回覆標準範本
+收到答案後，AI 須以下列結構提案：
+> #### 🗂️ 專案初始化提案
+> **1. 旅程基本盤**：[天數、成員、日期摘要]  
+> **2. 規劃師觀點與亮點推薦**：
+> * *季節限定*：我查到您去的時間剛好有 [活動]，已幫您融入 Day X！
+> * *成員友善*：因為有 [長輩/小孩]，Day Y 行程改為 [替代方案]。
+> * *解鎖體驗*：建議 Day Z 升級為 [一泊二食/划船]，預算約多 [金額]。  
+> **3. 路線優化**：原 A➔B 較繞，改為 A➔C➔B。  
+> **4. 備案與待辦**：雨天 Plan B 為 [備案]，[景點X] 門票需在 [日期] 搶購，已幫您加入代辦清單。
 
-### 2.4 動畫效果
+---
 
-#### 飄落動畫（依季節）
-```css
-@keyframes fall {
-    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-}
-.leaf {
-    position: fixed;
-    top: -20px;
-    font-size: 1.2rem;
-    animation: fall linear infinite;
-    pointer-events: none;
-    z-index: 0;
-    user-select: none;
-}
-```
-HTML 放在 `<body>` 最上方：
-```html
-<!-- 春季：🌸 | 秋季：🍁🍂 | 夏季：🌿 | 冬季：❄️ -->
-<span class="leaf" style="left:5%;animation-duration:9s;animation-delay:0s;">🍁</span>
-<span class="leaf" style="left:20%;animation-duration:12s;animation-delay:2s;">🍂</span>
-<!-- 建議 6-7 個，分散 left 位置 -->
-```
+## 3. 行程景點異動 SOP
 
-### 2.5 Badge 標籤系統
-```css
-.badge-pill  { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:6px; font-size:0.7rem; font-weight:600; }
-.badge-food    { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
-.badge-buy     { background:#fdf2f8; color:#db2777; border:1px solid #fbcfe8; }
-.badge-booking { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
-.badge-story   { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
-.badge-sight   { background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; }
-.badge-tip     { background:#fefce8; color:#ca8a04; border:1px solid #fef08a; }
-.badge-green   { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
-```
+當使用者要求「新增/修改景點」時，AI 必須嚴格執行以下 Phase 1 - 5，禁止直接寫入程式碼：
 
-### 2.6 陰影
-```css
-.soft-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08), 0 0 15px rgba(255,255,255,0.6); }
+```
+【SOP 流程】
+Phase 1: 問確認 ➔ 放哪天？幾點去？停多久？取代或插入？
+Phase 2: 查資料 ➔ 營業時間、公休日、票價、停車場狀況、隱形時間（排隊/安檢/步行）
+Phase 3: 衝檢    ➔ 車程與前後行程衝突？最後入場時間？長輩體力？Plan B 犧牲項目？
+Phase 4: 寫入    ➔ 建立 events 物件與 tip/notice；有預訂需求則自動加 notesChecklistData
+Phase 5: 部署    ➔ git add . ; git commit -m "feat(itinerary): ..."; git push
 ```
 
 ---
 
-## 3. HTML 整體結構
+## 4. 旅程資料合約 (Data Contracts)
 
-```
-<html>
-  <head>
-    [Meta tags + PWA meta + CDN links + <style>]
-  </head>
-  <body>
-    [飄落動畫 span × 6-7]
-    
-    <header>
-      [旅程標題 + 地點副標題]
-      [Tab 導航列]
-    </header>
-    
-    <!-- VIEW 1：行程 -->
-    <div id="view-itinerary">
-      [日期選擇器（橫向捲動 Pill）]
-      [主要行程卡片（動態渲染）]
-    </div>
-    
-    <!-- VIEW 2：訂單資訊 -->
-    <div id="view-tools" class="hidden">
-      [航班資訊]
-      [住宿清單]
-      [租車資訊]
-      [電子憑證連結]
-    </div>
-    
-    <!-- VIEW 3：自駕 -->
-    <div id="view-transport" class="hidden">
-      [每日路線概覽]
-      [重點路段]
-      [停車資訊]
-    </div>
-    
-    <!-- VIEW 4：購物 -->
-    <div id="view-shopping" class="hidden">
-      [購物清單（動態渲染）]
-      [必買伴手禮介紹]
-    </div>
-    
-    <!-- VIEW 5：行李 -->
-    <div id="view-luggage" class="hidden">
-      [行李清單（動態渲染）]
-      [氣候參考表]
-    </div>
-    
-    <!-- VIEW 6：注意事項 -->
-    <div id="view-notes" class="hidden">
-      [代辦清單（勾選 + localStorage 儲存）]
-      [其他注意事項區塊]
-    </div>
-    
-    <script>
-      [資料區] itineraryData / shoppingList / luggageList / notesChecklistData
-      [邏輯區] switchTab / buildDateNav / changeDay / toggleTip / render 函式 / 初始化
-    </script>
-  </body>
-</html>
-```
-
----
-
-## 4. 資料結構規格
-
-### 4.1 行程資料 `itineraryData`
+網頁的 `itineraryData` 陣列必須嚴格採用以下欄位格式：
 
 ```javascript
 const itineraryData = [
   {
-    date: "2026-09-26",        // ISO 格式，用於日期 Pill 計算星期
-    title: "抵達福岡 & 取車出發",  // 當天主標題
-    tag: "啟程",                 // 顯示在日期左上的小標籤
-    weather: "☀️ 27°C",         // 歷史均溫（API 載入前顯示）
+    date: "YYYY-MM-DD",
+    title: "當天標題",
+    tag: "城市/區域",
+    weather: "⛅ 歷史均溫", // 在天氣 API 讀取失敗時的備用顯示
     events: [
       {
-        time: "14:00",          // 時間（字串，可以是「待填」）
-        type: "flight",         // 類型（見下表）
-        icon: "fas fa-plane",   // FontAwesome class
-        title: "抵達福岡機場",
-        desc: "過海關、提領行李，前往租車公司取車。",
-        
-        // 選用：彩色小標籤（可多個）
+        time: "HH:MM",
+        type: "sight", // sight / food / buy / booking / transport / flight / hotel / story
+        icon: "fas fa-...", // FontAwesome 圖示
+        title: "景點中文名 (日文名)",
+        desc: "特色與停留時間說明。",
         badges: [
-          { cls: "booking", icon: "fa-plane", text: "入境辦理" }
+          { cls: "sight", icon: "fa-ticket-alt", text: "門票/費用" }
         ],
-        
-        // 選用：紅色警告框
+        // 選用：特別注意事項（底色統一收縮為淡米色，降低視覺雜亂感）
         notice: {
-          icon: "fa-clock",            // FontAwesome class（不含 fas）
-          text: "標題文字",
-          warning: "警告內容說明"
+          level: "danger", // danger (特別重要，紅色) / warning (一般注意，黃色)
+          icon: "fa-...",
+          text: "提醒標題",
+          warning: "具體警告或提示內容"
         },
-        
-        // 選用：藍色可展開攻略框
+        // 藍色折疊攻略（tip）
         tip: {
           title: "攻略標題 🗺️",
-          content: "詳細內容（可包含 <b>HTML</b> 標籤）"
+          content: "包含最佳到訪時間、購票方式、自駕停車場與費用、或大眾運輸具體乘車路線"
         }
       }
     ]
@@ -217,912 +120,36 @@ const itineraryData = [
 ];
 ```
 
-#### Event Type 對照表
-| type | 顏色 | 適用場景 |
-|------|------|---------|
-| `food` | 紅色系 | 餐廳、美食 |
-| `sight` | 藍色系 | 景點、觀光 |
-| `buy` | 粉色系 | 購物、市場 |
-| `booking` | 綠色系 | 預訂確認、取車、Check-in |
-| `transport` | 灰色系 | 交通移動、開車 |
-| `flight` | 藍色系 | 航班 |
-| `hotel` | 紫色系 | 住宿、溫泉旅館 |
-| `story` | 灰色系 | 自由活動、其他 |
+### 4.1 購物、行李與代辦清單動態生成規則
+1. **購物清單 (`shoppingList`)**：初始化時項目 `items` **一律保持空陣列 `[]`**，由使用者後續手動或對話新增。
+2. **行李清單 (`luggageList`)**：AI 須根據**目的地地形、當季溫度、長輩同行**（如護膝、慢性藥）等需求主動推薦，非套用死板模板。
+3. **注意事項代辦 (`notesChecklistData`)**：完全與行程事件掛鉤。若行程含自駕，自動加入駕照譯本、大車預訂；若含預訂票券（如高千穗划船），自動加入搶票時程。
 
 ---
 
-### 4.2 購物清單 `shoppingList`
-
-```javascript
-const shoppingList = [
-  {
-    category: "💊 藥妝保養",   // 分類標題（含 emoji）
-    color: "pink",            // 顏色鍵：pink / amber / purple / blue / green
-    items: []                 // 預設留空！讓使用者在網頁上或對話中自行新增，AI 不預填
-  }
-];
-```
-
-> 💡 **規劃師設計規則**：為確保網頁的實用性，`shoppingList` 的 `items` 陣列在專案初始化時**必須預設為空陣列**（或僅提供分類外殼），由使用者後續自行新增，AI 不擅自預填藥妝品項。
-
-#### 可用 color 值
-| color | 背景 | 邊框 | 標題色 |
-|-------|------|------|-------|
-| `pink` | bg-pink-50 | border-pink-100 | text-pink-800 |
-| `amber` | bg-amber-50 | border-amber-100 | text-amber-800 |
-| `purple` | bg-purple-50 | border-purple-100 | text-purple-800 |
-| `blue` | bg-blue-50 | border-blue-100 | text-blue-800 |
-| `green` | bg-green-50 | border-green-100 | text-green-800 |
-
----
-
-### 4.3 行李清單 `luggageList`
-
-```javascript
-const luggageList = [
-  {
-    category: "📄 證件文件",
-    color: "blue",           // 顏色鍵：blue / green / orange / red / purple / cyan
-    items: [                 // 純字串陣列
-      "護照（有效期 6 個月以上）"
-    ]
-  }
-];
-```
-
-> 💡 **規劃師動態生成規則**：AI 在初始化新專案時，**必須根據本次旅遊的目的地、季節氣候，並參考使用者過往的打包需求**，主動推薦最合適的行李清單，而非套用靜態範本。
-> * **去山區/高原 (如阿蘇/由布院)** ➔ 自動推薦：防風保暖外套、防滑徒步鞋。
-> * **雨季/梅雨季** ➔ 自動推薦：摺疊傘、防水鞋套、備用乾衣物。
-> * **有長輩同行** ➔ 自動推薦：長輩隨身慢性藥品、膝蓋護具、保暖防風圍巾。
-> * **歷史清單參考** ➔ 自動比對過往旅程中使用者曾勾選或要求的特殊行李。
-
----
-
-### 4.4 注意事項代辦清單 `notesChecklistData`
-
-```javascript
-const notesChecklistData = [
-  {
-    category: "🔴 超緊急（立刻辦！）",
-    color: "red",            // 顏色鍵：red / orange / amber / blue
-    items: [
-      {
-        id: "unique-id-01",  // 唯一 ID（用於 localStorage key，不可重複）
-        text: "說明文字",
-        urgent: true         // 顯示紅色「緊急」Badge
-      }
-    ]
-  }
-];
-```
-
-> 💡 **規劃師動態生成規則**：代辦清單的項目**必須完全根據行程中的具體活動來動態生成**。
-> * **檢查自駕相關** ➔ 若行程含有「自駕/開車」，自動加入：「預訂 N 人座車輛（確認行李空間）」與「辦理監理所日文駕照譯本（攜帶台灣駕照）」。
-> * **檢查門票與預約** ➔ 若行程含有「高千穗划船/熱門門票」，自動加入：「搶購 XX 門票（提醒乘船日前 30 天開搶）」。
-> * **檢查出發日** ➔ 若有航班資訊，自動加入：「申報 Visit Japan Web 取得 QR Code」、「換取日幣現金（部分山區不收卡）」等。
-> * 避免塞入無關行程的死板模板。
-
----
-
-> ⚠️ **重要**：`id` 在同一旅程的所有項目中必須唯一。  
-> 建議命名規則：`{旅程縮寫}-{功能縮寫}`，例如 `sep26-lic-trans`
-
----
-
-### 4.5 天氣座標 `dayCoordinates`
-
-```javascript
-const dayCoordinates = {
-  0: {                                    // key = 第幾天（從 0 開始）
-    name: "福岡",
-    lat: 33.5902,
-    lon: 130.4017,
-    tenkiUrl: "https://tenki.jp/forecast/9/46/8210/40132/"  // 日本天氣網站連結
-  },
-  1: { name: "福岡", lat: 33.5902, lon: 130.4017, tenkiUrl: "..." },
-  // 每天一個，與 itineraryData 索引對應
-};
-```
-
-**常用城市座標速查**：
-| 城市 | lat | lon |
-|------|-----|-----|
-| 福岡 | 33.5902 | 130.4017 |
-| 長崎 | 32.7503 | 129.8779 |
-| 佐世保 | 33.1802 | 129.7150 |
-| 別府 | 33.2830 | 131.4910 |
-| 由布院 | 33.2600 | 131.3590 |
-| 阿蘇 | 32.8844 | 131.1044 |
-| 熊本 | 32.7900 | 130.7417 |
-| 東京 | 35.6762 | 139.6503 |
-| 大阪 | 34.6937 | 135.5022 |
-| 京都 | 35.0116 | 135.7681 |
-| 下田 | 34.6796 | 138.9442 |
-| 熱海 | 35.0962 | 139.0717 |
-| 箱根 | 35.2324 | 139.1039 |
-
----
-
-## 5. JavaScript 邏輯規格
-
-### 5.1 Tab 切換 `switchTab(tabId)`
-- Tab ID 對應：`itinerary` / `tools` / `transport` / `shopping` / `luggage` / `notes`
-- 切換時：隱藏所有 view → 顯示目標 view
-- 購物/行李/注意事項首次開啟時執行對應 render 函式
-
-### 5.2 日期導航 `buildDateNav()`
-- 讀取 `itineraryData`，為每天建立一個 Pill 按鈕
-- Pill 顯示：星期縮寫（SUN/MON...）+ 日期數字
-- Active Pill 套用主題深色背景
-
-### 5.3 行程渲染 `changeDay(idx)`
-完整邏輯：
-1. 更新日期卡片（日期數字 / 星期 / 月份年份）
-2. 顯示歷史均溫，同時呼叫 `updateWeatherRealtime` 取 API 資料
-3. 清空事件容器，逐一建立事件卡片 DOM
-4. 每張卡片包含：圖示 + 時間 + 類型標籤 + 標題 + 描述 + badges + notice + tip
-5. 更新日期 Pill 的 active 狀態
-6. 控制上一天/下一天按鈕的顯示
-7. 執行淡入動畫（opacity 0 → 1，translateY 8px → 0）
-
-### 5.4 天氣 API `updateWeatherRealtime(dayDate, idx)`
-```
-API: https://api.open-meteo.com/v1/forecast
-參數: latitude, longitude, daily=weathercode,temperature_2m_max,temperature_2m_min
-      timezone=Asia/Tokyo, forecast_days=16
-```
-- 有快取：`weatherCache[idx]` 存放結果，避免重複請求
-- WMO 天氣碼對應 emoji（0=☀️, 1=🌤️, 2=⛅, 3=☁️, 51-65=🌧️, 95=⛈️）
-- 天氣文字可點擊，連結到 tenki.jp 詳細頁
-
-### 5.5 Tip 展開 `toggleTip(tipId)`
-- 切換 `.tip-body` 的 `open` class
-- 旋轉箭頭圖示（0° ↔ 180°）
-- 使用 CSS `max-height` transition 製造平滑展開效果
-
-### 5.6 注意事項勾選 `toggleNotesCheck(id)`
-- 讀取對應 checkbox 狀態
-- 寫入 `localStorage`（key: `{旅程前綴}_chk_{id}`）
-- 切換文字的 `line-through` 樣式
-
-### 5.7 初始化
-```javascript
-document.addEventListener('DOMContentLoaded', () => {
-    buildDateNav();
-    changeDay(0);
-    
-    // 若今天在旅程期間，自動跳到今天
-    const today = new Date().toISOString().split('T')[0];
-    const todayIdx = itineraryData.findIndex(d => d.date === today);
-    if (todayIdx !== -1) changeDay(todayIdx);
-    
-    // 預先渲染注意事項（讓 localStorage 勾選狀態立即生效）
-    renderNotesChecklist();
-});
-```
-
----
-
-## 6. Meta Tags（PWA 支援）
-
-```html
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="旅程簡稱">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#fff7ed">  <!-- 主題淺色 -->
-<meta name="description" content="旅程描述">
-<link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/512/197/197604.png">
-```
-
----
-
-## 7. Header 結構
-
-```html
-<header class="pt-6 md:pt-10 pb-3 text-center px-3 relative z-10">
-    <!-- 小標 -->
-    <p class="text-xs tracking-[0.25em] text-{主題}-500 font-semibold uppercase mb-1">✈️ 旅遊行程規劃</p>
-    
-    <!-- 主標題 -->
-    <h1 class="text-[1.45rem] md:text-[2.2rem] font-serif-tc font-bold tracking-[0.1em] text-[#1a1a1a] mb-1">
-        北九州 9 日自駕
-    </h1>
-    
-    <!-- 地點副標題 -->
-    <p class="text-sm text-gray-400 mb-5">🗾 福岡 · 長崎 · 佐世保 · 別府 · 由布院</p>
-
-    <!-- Tab 導航 -->
-    <div class="max-w-5xl mx-auto overflow-x-auto no-scrollbar pb-3 px-1 text-center">
-        <div class="inline-flex bg-white/60 backdrop-blur-md p-1 rounded-full shadow-sm border border-gray-200">
-            <button onclick="switchTab('itinerary')" id="tab-itinerary" class="tab-btn active ...">
-                <i class="fas fa-calendar-alt mr-1"></i>行程
-            </button>
-            <!-- 其他 Tab 按鈕... -->
-        </div>
-    </div>
-</header>
-```
-
-Tab 按鈕的 active CSS：
-```css
-.tab-btn.active {
-    background-color: #c2410c;   /* 主題深色 */
-    color: white;
-    box-shadow: 0 4px 12px rgba(194,65,12,0.3);
-}
-```
-
----
-
-## 8. 主要行程卡片結構
-
-```html
-<div id="main-card-content" class="bg-white/95 backdrop-blur-xl rounded-[1.5rem] md:rounded-[2rem] soft-shadow max-w-3xl mx-auto p-4 sm:p-6 md:p-10 border border-white">
-    
-    <!-- 日期 + 標題列 -->
-    <div class="flex flex-row items-center gap-3 md:gap-5 mb-5 md:mb-8">
-        <!-- 日期方塊 -->
-        <div class="shrink-0 flex flex-col items-center justify-center w-16 h-16 md:w-[5.5rem] md:h-[5.5rem] border border-{主題}-100 rounded-[1rem] bg-{主題}-50 shadow-sm">
-            <span id="card-date">--</span>
-            <span id="card-day-week">---</span>
-            <span id="card-month">---</span>
-        </div>
-        <!-- 標題 -->
-        <div class="flex-1 min-w-0">
-            <span id="card-tag">城市</span>
-            <div id="card-weather"></div>
-            <h2 id="card-title">載入中...</h2>
-        </div>
-    </div>
-
-    <!-- 事件列表（動態渲染）-->
-    <div class="space-y-3 md:space-y-4" id="card-events"></div>
-
-    <!-- 上一天/下一天 -->
-    <div class="flex justify-between mt-8 pt-6 border-t border-gray-100">
-        <button id="btn-prev" onclick="changeDay(currentIndex - 1)">← 上一天</button>
-        <button id="btn-next" onclick="changeDay(currentIndex + 1)">下一天 →</button>
-    </div>
-</div>
-```
-
----
-
-## 9. 事件卡片渲染模板
-
-每個事件卡片的 HTML 結構（JS 動態生成）：
-
-```html
-<div class="day-event-card {bg} {border} border rounded-xl p-3 md:p-4">
-    <div class="flex gap-3">
-        <!-- 圖示 -->
-        <div class="shrink-0 w-9 h-9 rounded-full bg-white flex items-center justify-center {icon-color} shadow-sm border {border}">
-            <i class="{ev.icon} text-sm"></i>
-        </div>
-        <!-- 內容 -->
-        <div class="flex-1 min-w-0">
-            <div class="flex flex-wrap items-center gap-2 mb-1">
-                <span class="text-[11px] font-bold {time-color} font-mono">{ev.time}</span>
-                <span class="badge-pill badge-{type}">類型標籤</span>
-            </div>
-            <p class="font-bold text-[13.5px] md:text-[14.5px] text-gray-800">{ev.title}</p>
-            <p class="text-[12px] md:text-[13px] text-gray-500 mt-1">{ev.desc}</p>
-        </div>
-    </div>
-    
-    <!-- badges（若有）-->
-    <div class="flex flex-wrap gap-1.5 mt-2">
-        <span class="badge-pill badge-{cls}"><i class="fas {icon}"></i> {text}</span>
-    </div>
-    
-    <!-- notice（若有）-->
-    <div class="mt-2.5 bg-white/70 rounded-xl border border-gray-100 p-3">
-        <div class="flex items-center gap-2 mb-1.5">
-            <i class="fas {notice.icon} text-gray-400"></i>
-            <span class="font-bold text-gray-600">{notice.text}</span>
-        </div>
-        <div class="flex items-start gap-2 bg-red-50 rounded-lg border border-red-100 p-2">
-            <i class="fas fa-exclamation-triangle text-red-400"></i>
-            <span class="text-red-700 font-medium">{notice.warning}</span>
-        </div>
-    </div>
-    
-    <!-- tip（若有，可展開）-->
-    <div class="mt-2.5 bg-blue-50/60 rounded-xl border border-blue-100">
-        <button onclick="toggleTip('{tipId}')">
-            <i class="fas fa-info-circle"></i>
-            {tip.title}
-            <i class="fas fa-chevron-down"></i>
-        </button>
-        <div id="{tipId}" class="tip-body px-4">
-            <div class="pb-4 text-gray-600">{tip.content}</div>
-        </div>
-    </div>
-</div>
-```
-
----
-
-## 10. 訂單資訊頁建議結構
-
-包含以下區塊（每個區塊都是白色卡片）：
-
-1. **航班資訊**：去程 + 回程，各包含航班號、日期、時間、航廈、行李額度
-2. **住宿清單**：每間飯店一列，包含名稱、入住日期、訂單號、憑證連結
-3. **租車資訊**：車型、取/還車時間地點、ETC、保險、費用
-
-```html
-<!-- 卡片外層 -->
-<div class="bg-white/95 backdrop-blur-xl rounded-[1.5rem] soft-shadow p-5 md:p-6 border border-white">
-    <h3 class="text-[1.1rem] md:text-lg font-bold text-gray-800 mb-3 border-b pb-2 flex items-center gap-2">
-        <i class="fas fa-plane text-blue-500"></i> 航班資訊
-    </h3>
-    <!-- 內容 -->
-</div>
-```
-
----
-
-## 11. GitHub 部署流程
-
-### 首次建立
-```powershell
-# 1. 進入專案目錄
-cd C:\path\to\project-name
-
-# 2. 初始化 Git
-git init
-git config user.email "marksu1122@users.noreply.github.com"
-git config user.name "marksu1122"
-
-# 3. 加入並提交
-git add .
-git commit -m "feat: Initial commit - {旅程名稱}"
-
-# 4. 建立 GitHub repo 並推送（需已登入 gh CLI）
-gh repo create {repo-name} --public --source=. --remote=origin --push --description "{描述}"
-
-# 5. 啟用 GitHub Pages
-$body = '{"source":{"branch":"master","path":"/"}}'; $body | gh api repos/marksu1122/{repo-name}/pages --method POST --input -
-```
-
-### 後續更新
-```powershell
-git add .
-git commit -m "update: {說明}"
-git push
-# GitHub Pages 約 1-2 分鐘後自動更新
-```
-
-### 網址格式
-- **Repo**：`https://github.com/marksu1122/{repo-name}`
-- **網頁**：`https://marksu1122.github.io/{repo-name}/`
-
----
-
-## 12. 新旅程建立 Checklist
-
-複製以下清單，建立新旅程時逐項完成：
-
-```
-□ 1. 確定旅程名稱 → repo 命名規則：{地點}-trip-{月份}-{年份}
-□ 2. 選擇主題色（春/秋/夏/冬/自訂）
-□ 3. 複製現有 index.html 作為範本
-□ 4. 修改 <title> 和 meta 標籤
-□ 5. 修改 Header 標題、副標題、地點
-□ 6. 替換飄落動畫 emoji 和顏色
-□ 7. 修改 Tab active 顏色（CSS .tab-btn.active）
-□ 8. 修改 .date-pill.active 顏色
-□ 9. 修改 card-date 區塊 border/bg 顏色
-□ 10. 填入 itineraryData（每天的行程）
-□ 11. 填入 dayCoordinates（每天的天氣座標）
-□ 12. 填入 shoppingList（購物清單）
-□ 13. 填入 luggageList（行李清單）
-□ 14. 填入 notesChecklistData（代辦清單，注意 ID 唯一性）
-□ 15. 更新訂單資訊頁內容（航班/住宿/租車）
-□ 16. 更新自駕頁路線概覽
-□ 17. 確認 localStorage key 前綴唯一（避免跨旅程衝突）
-□ 18. 在瀏覽器本機測試（直接開啟 index.html）
-□ 19. git init + commit + gh repo create
-□ 20. 啟用 GitHub Pages
-□ 21. 確認網頁可正常訪問
-□ 22. 更新 FEATURES.md 的專案列表
-```
-
----
-
-## 13. 常見問題 & 解法
-
-| 問題 | 原因 | 解法 |
-|------|------|------|
-| GitHub Pages 還是舊版 | 瀏覽器快取 | `Ctrl+Shift+R` 強制重新整理，或用無痕視窗 |
-| 天氣 API 沒有資料 | 日期超出 16 天預報範圍 | 顯示「歷史均溫」是正常的 |
-| 勾選清單重開後消失 | localStorage key 衝突 | 確保每個旅程的 `id` 前綴不同 |
-| 手機版 Tab 文字太擠 | 螢幕太窄 | Tab 列已設定橫向捲動（`overflow-x-auto no-scrollbar`）|
-| Tip 展開動畫卡頓 | `max-height` transition 設定問題 | 確保 `.tip-body` 有 `transition: max-height 0.4s` |
-
----
-
-## 14. 版本記錄
-
-| 日期 | 版本 | 說明 |
-|------|------|------|
-| 2026-05 | v1.0 | 日本 10 日（6月），參考美西版建立 |
-| 2026-06 | v1.1 | 加入即時天氣 API、導遊攻略 tips |
-| 2026-07 | v2.0 | 北九州 9 日（9月），秋季主題，6人版本 |
-| 2026-07 | v2.1 | 新增景點 SOP 標準流程（第 15 節）|
-| 2026-07 | v2.2 | 新增預訂/排隊/交通研究與代辦清單自動化 |
-| 2026-07 | v2.3 | 新專案問卷與專業旅遊規劃師指標（第 16 節）|
-| 2026-07 | v2.4 | 改進購物/行李/代辦清單規劃師動態生成機制 |
-
----
-
-## 15. 新增景點 SOP（標準作業流程）
-
-> 當使用者說「幫我加這個景點」時，AI 必須依照此流程逐步執行。  
-> **不可跳過任何步驟直接寫入程式碼。**
-
----
-
-### 📋 Phase 1：資訊收集（問使用者）
-
-收到景點名稱後，**先確認以下資訊再動手**：
-
-```
-必問項目：
-□ A. 景點要放在哪一天？（哪個日期）
-□ B. 大概幾點去？（早上 / 下午 / 晚上，或指定時間）
-□ C. 預計停留多久？
-□ D. 這個景點取代原本行程中的哪個活動，還是插入在哪個活動之間？
-```
-
-> 如果使用者直接說「放第 3 天下午」這類資訊，A/B 可以不用再問。  
-> 如果全天行程已排滿，需提示使用者確認是否調整其他行程。
-
----
-
-### 🔍 Phase 2：景點資料研究（AI 自行查詢）
-
-確認放哪天之後，**使用 `search_web` 查詢以下資訊**，共四大面向：
-
----
-
-#### 🚗 面向一：交通與時間成本（最核心）
-
-```
-□ 1-A. 從當天前一個景點到這裡的「實際路況車程」
-         → 不能只看直線距離！山路 / 市區塞車 / 單行道都會讓時間翻倍
-         → 自駕：確認是否有塞車潮（什麼時段？週末更嚴重？）
-         → 大眾運輸：確認班次密度（郊區公車可能 1 小時才 1 班，錯過就搞砸）
-
-□ 1-B. 停車場實況（自駕旅程必查）
-         → 停車場位置、容量、費用
-         → 熱門景點「等車位本身」可能耗掉 30-60 分鐘，要計入行程
-         → 有無替代停車點 + 步行到景點的距離
-
-□ 1-C. 隱形時間成本（「抵達」≠「開始玩」）
-         → 排隊買票時間
-         → 安檢 / 存包流程
-         → 從停車場步行到景點核心區的時間
-         → 這些全部加總後，才是「真正可以遊玩的時間起點」
-```
-
----
-
-#### 🎫 面向二：開放時間與預約機制（最容易踩雷）
-
-```
-□ 2-A. 公休日 & 最後入場時間
-         → 博物館、美術館多為週一或週二公休
-         → 「閉館 17:00」≠「17:00 可以入場」→ 最後入場通常提早 30-60 分鐘
-         → 節假日是否有特殊安排？（有些地方節日反而關閉）
-
-□ 2-B. 強制預約制（現在越來越常見！）
-         → 是否全面線上預約、現場不售票？
-         → 熱門景點（特定國家公園、限定餐廳、知名展覽）可能「現場根本買不到」
-         → 若需預約：提前幾天？官網 / Klook / 其他平台？
-         → 若已客滿：是否有候補機制？
-```
-
----
-
-#### 🌤️ 面向三：景點的即時狀態（出發前確認）
-
-```
-□ 3-A. 季節與天氣限制
-         → 晴天 vs 雨天的體驗差異（山區霧氣、海邊浪大、戶外景點泥濘）
-         → 旅程當下的季節是否在最佳觀賞期？還是淡季？
-         → 特定自然景觀有沒有氣象條件限制（如：阿蘇火口能見度 / 霧氣）
-
-□ 3-B. 整修或施工狀況（出發前 3-7 天再查一次）
-         → 搜尋 Google Maps 最新評論（排序選「最新」，看近 1-2 個月的留言）
-         → 關鍵字：「整修中」「封閉」「施工」「不如預期」「看不到」
-         → 若發現施工資訊，主動告知使用者，不要假裝沒看到
-```
-
----
-
-#### 📋 面向四：基本資訊
-
-```
-□ 4-A. 正式名稱（含日文原名，用於 title 欄位）
-□ 4-B. 門票價格（成人 / 兒童 / 是否有聯票或 combo 優惠）
-□ 4-C. 平均遊覽時間（普通遊客 vs 深度遊）
-□ 4-D. 最佳參觀時段（幾點人最少、光線最好）
-□ 4-E. 特殊注意事項（服裝要求、禁止拍照區域、寵物禁止等）
-```
-
-> ⚠️ 若景點在旅程日期之後超過 16 天，天氣 API 無法預報，tip 中補充該地區季節特性即可。
-
----
-
-#### 🎟️ 面向五：預訂機制 & 非自駕交通路線（必查）
-
-```
-【預訂 / 排隊機制】
-
-□ 5-A. 景點門票
-         → 是否可現場購票？還是必須線上預約（現場不開放）？
-         → 推薦購票平台？（官網 / Klook / KKday / 當地旅遊局）
-         → 若需預約：最早可提前幾天？有沒有「放票日期」（如每月幾號開放下個月的票）？
-         → 若已售完：有沒有候補機制？退票再搶的可能性？
-         → 搶票攻略：幾點開放購票、用什麼設備最穩（PC / 手機 App）
-
-□ 5-B. 熱門餐廳訂位
-         → 是否接受訂位？電話 / 線上（Tabelog 一休 / OpenTable / 官網）？
-         → 6 人同行需提前幾天？（熱門店可能 1-2 週前）
-         → 若不接受訂位：幾點開始排隊最佳？有沒有「整理券」制度（到場領號碼牌）？
-         → 若有電話訂位：需要會日文嗎？或可用 Google 電話翻譯？
-
-□ 5-C. 現場排隊攻略
-         → 是否有「整理券」或「事前抽號碼」制度？（到場才領，但不一定現場等）
-         → 最佳排隊時間：開門前幾分鐘到最有效？（有些熱門地點需要提早 30-60 分）
-         → 旺季 vs 淡季等待時間差異多大？
-         → 6 人同行：等待時間是否比 2 人更長？（大桌難安排）
-```
-
-```
-【非自駕交通路線】（僅在旅程非全程自駕時查詢）
-
-□ 5-D. 從前一個景點到這個景點的具體大眾運輸路線
-         → 搭什麼線？在哪站上車？在哪站下車？步行幾分鐘？
-         → 班次頻率（幾分鐘一班？末班車幾點？）
-         → 是否可用 IC 卡（Suica / ICOCA / 交通系 IC）？還是需要買單程票？
-         → 是否包含在已購的 Pass 範圍內？（JR Pass / 地鐵一日券等）
-         → 查詢工具：Google Maps「大眾運輸模式」/ HyperDia（日本電車最準確）
-
-□ 5-E. 去程 / 回程路線是否對稱？
-         → 回程班次是否足夠？末班車時間是否能配合行程？
-         → 若有「單向票」活動或景點巴士，注意回程是否要另行安排
-```
-
-> 💡 查完以上後，整理出「**這個景點需要做哪些事前準備**」，
-> 直接帶入 Phase 4.5 加入代辦清單。
-
-> ⚠️ 若景點在旅程日期之後超過 16 天，天氣 API 無法預報，tip 中補充該地區季節特性即可。
-
----
-
-### ⏱️ Phase 3：時間軸衝突 & 排擠效應評估
-
-在插入景點前，**同時檢查時間軸與代價**：
-
-#### 3.1 時間軸硬性檢查
-```
-□ 前一個活動結束時間 + 實際車程（含塞車）+ 停車 / 步行 ≤ 新景點開始時間？
-□ 新景點結束時間 + 隱形時間（買票/排隊/步行回停車場）+ 車程 ≤ 下一活動開始時間？
-□ 景點的「最後入場時間」是否涵蓋預計到訪時段？（注意不是閉館時間）
-□ 若是週末，停車場等待時間有沒有額外計入？
-□ 6 人同行特殊考量：大車停車位更少、餐廳候位更久、集體行動效率較低
-```
-
-#### 3.2 排擠效應評估（時間是固定的）
-```
-□ 塞進這個景點後，當天哪個原有行程會被壓縮？
-   → 是晚餐提早？還是下一個景點變走馬看花？還是住宿辦理入住很趕？
-
-□ 如果時間不夠，「可被犧牲的項目」是哪個？
-   → 必須在插入前就想好「Plan B」，不能讓使用者當天臨時決定
-   → 建議主動列出：「若時間不夠，可以省略 XX，或把 XX 改成 XX」
-
-□ 旅伴的體力值評估
-   → 新增景點代表步數增加（多一個景點 ≈ 多 5,000-15,000 步）
-   → 若當天已有大量步行，要提示體力負荷風險
-   → 特別注意：有長輩、小孩、或剛逛完大型商場的旅伴，體力耐受度更低
-   → 下午場景點若旅伴已精疲力竭，「去了也沒心情」等於白去
-```
-
-#### 3.3 即時狀態 Red Flag 確認
-```
-□ 是否查到近期施工 / 封閉 / 整修的資訊？
-□ 旅程日期當天的天氣預測是否會影響體驗？（戶外景點尤其重要）
-□ 若有任何 Red Flag → 必須在回覆使用者時明確說出，不可略過
-```
-
-若有任何衝突或 Red Flag，**先向使用者說明，並提供具體的調整建議**，等確認後再寫入。
-
----
-
-### ✍️ Phase 4：寫入行程資料
-
-確認無衝突後，依照以下規則寫入 `itineraryData`：
-
-#### 4.1 事件物件範本
-```javascript
-{
-    time: "14:00",           // 根據研究結果填入建議時間
-    type: "sight",           // 景點用 sight，餐廳用 food，購物用 buy
-    icon: "fas fa-mountain", // 選擇最貼切的 FontAwesome icon
-    title: "景點名稱（日文原名）",
-    desc: "一句話說明景點特色 + 建議停留時間。",
-    badges: [
-        { cls: "sight", icon: "fa-ticket-alt", text: "¥門票金額" },
-        { cls: "booking", icon: "fa-clock", text: "所需時間" }
-    ],
-    // 若有排隊 / 預約 / 特殊限制 → 用 notice
-    notice: {
-        icon: "fa-clock",
-        text: "排隊 / 注意事項標題",
-        warning: "具體說明：平均排隊時間、建議幾點前到、是否需提前預訂"
-    },
-    // 景點攻略細節 → 用 tip（可展開）
-    tip: {
-        title: "景點攻略 🗺️",
-        content: "1. 最佳入場時間：XX:XX 前（避開人潮）<br>2. 必看重點：XXX<br>3. 停車：XX 停車場，距離 X 分鐘步行<br>4. 購票：現場 / Klook / 官網"
-    }
-}
-```
-
-#### 4.2 icon 選擇速查
-| 景點類型 | FontAwesome icon |
-|---------|----------------|
-| 山岳 / 火山 | `fa-mountain` |
-| 神社 / 寺廟 | `fa-torii-gate` / `fa-place-of-worship` |
-| 城堡 | `fa-chess-rook` |
-| 博物館 | `fa-museum` |
-| 主題樂園 | `fa-ferris-wheel` |
-| 溫泉 | `fa-hot-tub` |
-| 海灘 / 湖泊 | `fa-water` |
-| 購物 | `fa-shopping-bag` |
-| 餐廳 / 美食 | `fa-utensils` |
-| 夜景 / 展望台 | `fa-binoculars` |
-| 橋梁 / 建築 | `fa-archway` |
-| 自然步道 | `fa-leaf` |
-| 動物園 / 水族館 | `fa-paw` |
-| 港口 / 船隻 | `fa-ship` |
-
-#### 4.3 tip 內容必寫項目
-
-tip 分成兩區段：**攻略**（怎麼玩）+ **交通**（怎麼去）
-
-```
-【攻略區】
-1. 建議到訪時間（幾點最好 / 避開人潮 / 排隊最短）
-2. 購票方式（現場 / 官網 / Klook，若需預約則寫清楚平台與流程）
-3. 排隊 / 整理券策略（若有）：幾點到、怎麼領、等多久
-4. 1-3 個當地獨家提醒或必看重點
-
-【交通區】（若非全程自駕，必須包含）
-5. 從前一個景點的具體搭乘方式：
-   「從 XX 站搭 YY 線，在 ZZ 站下車，步行約 N 分鐘」
-6. IC 卡是否可用 / 是否在 Pass 範圍
-7. 回程末班車時間提醒（若有限制）
-
-【自駕區】（若是自駕旅程）
-5. 停車場名稱 + 位置 + 費用
-6. 旺季等車位可能需要 XX 分鐘（若有此風險）
-```
-
-> ⚠️ 非自駕路線資訊**不可省略**，不能只寫「搭電車過去」而不給具體路線。
-
----
-
-### 📌 Phase 4.5：自動新增代辦清單項目
-
-> **每次新增景點後，必須執行此步驟。**  
-> 根據 Phase 2 面向五的研究結果，判斷是否需要在 `notesChecklistData` 中加入對應的代辦項目。
-
-#### 判斷規則
-
-| 情況 | 加入代辦清單 | 類別 | urgent |
-|------|------------|------|--------|
-| 門票需要線上預購 / 搶票 | ✅ 必加 | 出發前 1-2 個月 | 視熱門程度 |
-| 餐廳需要提前訂位 | ✅ 必加 | 出發前 1-2 個月 | 若 6 人同行則 true |
-| 有整理券 / 特定時間開放購票 | ✅ 必加 | 出發前 1-2 週 | true |
-| 需要確認特定 Pass 是否涵蓋 | ✅ 必加 | 出發前 1-2 週 | false |
-| 完全免費 + 現場隨到隨入 | ❌ 不需加 | — | — |
-| 現場可購票 + 無排隊問題 | ❌ 不需加 | — | — |
-
-#### 代辦項目格式
-
-加入 `notesChecklistData` 對應的 `category` 裡：
-
-```javascript
-// 在適合的 category（緊急 / 出發前 1-2 個月 / 出發前 1-2 週）加入：
-{
-    id: "{旅程前綴}-{景點縮寫}-{動作縮寫}",  // 例如：sep26-huis-ticket
-    text: "{景點名稱}：{具體要做什麼} ← {平台/方式}",
-    urgent: true / false
-}
-
-// 範例：
-{ id: "sep26-huis-ticket", text: "豪斯登堡：Klook 購買一日券（官網或 Klook 提前購有折扣）", urgent: false }
-{ id: "sep26-yufu-dinner", text: "由布院晚餐：餐廳 6 人訂位（建議提前 1 週，電話或一休網）", urgent: true }
-{ id: "sep26-aso-bus", text: "阿蘇火口：確認當天是否開放（火山活動等級，出發當天再查）", urgent: false }
-```
-
-#### 加入原則
-
-```
-✅ 文字要具體：「訂位」要寫「在哪裡訂」、「多少人」、「提前幾天」
-✅ 不要加重複項目：先確認清單中沒有相同的事項
-✅ 緊急程度誠實標記：容易售完 / 限量供應 = urgent: true
-✅ 代辦清單更新後要一起 commit（不要分兩次 push）
-```
-
----
-
-### 🚀 Phase 5：寫入並部署
-
-```powershell
-# 同時包含：行程更新 + 代辦清單更新
-git add .
-git commit -m "feat(itinerary): 新增 {景點名稱} @ Day {天數} {日期}; 更新代辦清單"
-git push
-```
-
-GitHub Pages 約 **1-2 分鐘**後生效。
-
----
-
-### 📝 新增景點 完整對話範例
-
-**使用者說：「幫我在 Day 6 下午加一個由布院的金鱗湖」**
-
-**Step 1 — AI 問確認：**
-```
-好的！確認幾個細節：
-1. 放在 Day 6（10/1）哪個時段？目前行程是 10:00 到由布院，10:45 金鱗湖、之後散策。
-   → 要加在散策之後嗎？還是取代其中一段？
-2. 預計停留多久？（金鱗湖建議 30-45 分鐘）
-3. 這趟是自駕，不需要查大眾運輸，對嗎？
-```
-
-**Step 2 — 使用者回：「散策之前先去，停 40 分，自駕」**
-
-**Step 3 — AI 執行研究（Phase 2）：**
-```
-面向一（交通）：由布院站 → 金鱗湖步行 10 分鐘，從旅館開車 5 分鐘，有免費停車場。
-面向二（開放）：全天開放，免費，無閉館時間。
-面向三（即時）：10 月初正值初秋，薄霧機率低但景色仍美；查 Google Maps 近期評論無施工。
-面向四（基本）：金鱗湖（きんりんこ），免費，建議 30-45 分，清晨薄霧最美。
-面向五（預訂）：完全免費隨到隨入，不需預訂 → 不加代辦清單。
-```
-
-**Step 4 — AI 執行 Phase 3（時間軸）：**
-```
-目前 Day 6：旅館 → 10:00 抵由布院。
-插入：10:00 金鱗湖（40 分）→ 10:40 結束 → 10:50 開始散策，不衝突。
-體力：加 40 分鐘步行，由布院地勢平坦，無負擔。
-Plan B：若時間緊，可縮短至 25 分鐘快速走一圈。
-```
-
-**Step 5 — 寫入 Phase 4 + Phase 4.5：**
-- 插入 event 物件（type: sight，加 tip 含早晨薄霧攻略 + 停車場資訊）
-- 不需加代辦清單（免費隨到隨入）
-
-**Step 6 — Phase 5 部署：**
-```powershell
-git commit -m "feat(itinerary): 新增 金鱗湖 @ Day 6 2026-10-01"
-git push
-```
-
----
-
-### ⚠️ SOP 禁止事項
-
-```
-✗ 不可不查資訊就直接寫入（可能營業時間 / 預約制有誤）
-✗ 不可只看地圖直線距離估算車程（要查實際路況）
-✗ 不可忽略隱形時間成本（停車等待、買票排隊、步行到核心區）
-✗ 不可不確認插入位置就修改行程（可能造成時間衝突）
-✗ 不可在有 Red Flag（施工 / 封閉 / 惡劣天氣）時不告知使用者
-✗ 不可只評估「能不能塞進去」，不評估「塞進去後犧牲什麼」
-✗ 非自駕路線：不可只寫「搭電車」，必須給完整路線（哪條線 / 哪站 / 步行幾分鐘）
-✗ 需要預訂的景點 / 餐廳：不可不加代辦清單
-✗ tip 不可只寫一行（至少要有 3 個實用資訊，含交通或停車）
-✗ 不可忘記 commit message 格式：feat(itinerary): 新增 {景點} @ Day {N} {日期}
-```
-
----
-
-## 16. 新專案啟動與專業旅遊規劃師指南
-
-> **用途**：當使用者要建立全新旅程專案時，AI 必須扮演專業的「旅遊規劃師」，執行以下標準化啟動程序。
-
----
-
-### 📋 Phase 1：專案啟動必問問卷
-
-在為新專案建立任何檔案前，**必須先向使用者詢問並確認以下 9 大核心問題**：
-
-```markdown
-1. **出發地 & 目的地**：(例如：台北 ➔ 北九州)
-2. **旅遊天數**：(例如：9 天)
-3. **旅遊日期**：(例如：2026/09/26 - 2026/10/04)
-4. **同行成員**：(人數、組合成員如：長輩/小孩/情侶/朋友群)
-5. **交通資訊**：(自駕/全程大眾運輸/部分租車，若自駕是否有雪胎/ETC/大車需求)
-6. **路線資訊**：(例如：福岡進出，逆時針環島 / 定點放射狀玩)
-7. **住宿資訊**：(是否已訂妥？偏好溫泉旅館/商務旅館/包棟民宿)
-8. **必去景點/活動**：(使用者清單中不可妥協的景點)
-9. **必吃美食**：(使用者指名想嚐鮮的美食種類或特定名店)
-```
-
----
-
-### 🧠 Phase 2：專業旅遊規劃師的 6 大主動思考維度
-
-作為專業旅遊規劃師，AI **不能只被動填入問卷答案**，在收到問卷後，必須主動進行以下分析並向使用者回饋：
-
-#### 1. 旅遊風格與節奏偏好 (Pace & Style)
-* **鐵人行程** (每天 15,000 步以上，早出晚歸) vs **悠閒度假** (每天睡飽、景點不超過 3 個，下午留白)
-* 是否有強烈的**購物需求** (需預留天神/梅田等商圈大半天時間，並計入行李限重)
-* 是否偏好**拍照打卡 / 網美景點** (行程排入夕陽、清晨等最佳光線時段)
-
-#### 2. 同行成員的特殊考量與飲食限制 (Accessibility & Diet)
-* **長輩同行**：嚴禁排入連續爬坡 (如：無電梯的地鐵轉乘、沒有無障礙通道的寺廟)，每 2 小時必須安排坐下休息/上廁所。
-* **幼童同行**：需標註母嬰室位置、推車友善路線，避開深夜活動與需要安靜的高級餐廳。
-* **飲食限制**：主動確認有無**過敏源** (甲殼類、堅果)、**飲食禁忌** (素食、不吃牛/豬、不吃生食)，並在餐廳排入前確認該店是否提供替代菜單。
-
-#### 3. 預算區間與輕奢體驗 (Budget & Highlights)
-* 小資省錢 vs 中階舒適 vs 奢華享受。
-* 主動建議當地的**指標性「解鎖體驗」**（例如：既然去由布院，主動詢問要不要直上「一泊二食」頂級溫泉旅館，而非只排便宜商旅）。
-
-#### 4. 季節限定活動與節慶搜查 (Seasonality & Events)
-* **櫻花/紅葉**：自動根據櫻花/紅葉前線預測，將行程微調至當下最可能滿開的地點。
-* **祭典與煙火**：主動查詢旅遊日期內是否有「當地祭典、花火大會、週末市集、夜間點燈」等限定活動。這往往是旅程的亮點，若有，主動詢問使用者是否微調路線去參與。
-
-#### 5. 路線順暢度優化邏輯 (Route Optimization)
-* 嚴格拒絕「折返跑」行程。自駕要避開「下班尖峰時段進出大城市」；大眾運輸要配合「特急列車/新幹線時刻表」排定景點先後。
-* **首尾日原則**：首日（下飛機）與尾日（去機場）行程必須極度保守，預留飛機延誤與退稅排隊時間。
-
-#### 6. 天氣與雨天備案邏輯 (Weather & Backup Plans)
-* 行程中必須有 **「室內替代方案」**。例如：下大雨時，原訂的戶外高原行程可以改成前往哪個室內博物館或大型 Outlets。
-* 在給使用者的提案中，主動標記：「*若當天下雨，建議 Plan B 改去 XX*」。
-
----
-
-### 🚀 Phase 3：問卷回覆與提案標準範本
-
-當使用者提供問卷答案後，AI 必須以下列格式回覆，**展現旅遊規劃師的專業度**：
-
-> #### 🗂️ 專案初始化提案
->
-> **1. 旅程基本盘**：[天數、成員、日期摘要]
->
-> **2. 規劃師觀點與亮點推薦**：
-> * **季節限定**：我查到您去的時間剛好有 [活動名稱]，已幫您融入 Day X！
-> * **成員友善**：因為有 [長輩/小孩]，在 Day Y 的健行我特別改為 [替代方案]。
-> * **解鎖體驗**：推薦 Day Z 可以安排 [特殊活動/溫泉一泊二食]，預算加幅約 [金額]，您看合適嗎？
->
-> **3. 路線流向優化**：
-> * 原訂 [景點A] 到 [景點B] 路線較不順，我已優化為：`A ➔ C ➔ B`。
->
-> **4. 待確認與建議 Plan B**：
-> * 如果 Day N 下雨，我們的備案是 [備案景點]。
-> * [景點X] 需要在 [日期] 搶票，請問需要幫您加入待辦清單嗎？
-
----
-
-### ⚠️ SOP 規劃師禁止事項
-
-```
-✗ 禁止在未詢問這 9 大問題前，就直接生成新專案的 index.html
-✗ 禁止排入不符合同行成員體力的行程（例如長輩爬大山）
-✗ 禁止將「需要高度預約」的景點直接排入而不給預訂提醒與代辦清單
-✗ 禁止忽視當季限定的在地祭典與花火
-```
-
+## 5. 視覺設計與美學規範
+
+為維持網頁如同高質感旅遊雜誌的排版，配色與區塊必須遵守以下原則：
+
+### 5.1 莫蘭迪低飽和度配色 (Morandi Tint Palette)
+嚴禁大膽塗滿亮紅、亮藍。卡片背景採用 **10% 主題淡色背景 (Tint Background)**，僅在 Icon 和標題使用主色：
+
+| 類型 | 主色 (Text/Icon) | 背景色 (Tint bg) | 邊框色 | 設計意圖 |
+| :--- | :--- | :--- | :--- | :--- |
+| **`sight` 景點** | `#3A5F43` (森林綠) | `#F2F6F3` | `#E2ECE5` | 大自然的大地感，放鬆舒適 |
+| **`transport` 交通** | `#5A6B7C` (石板灰) | `#F4F6F8` | `#E5EAEF` | 完美的冷色調中性調和劑 |
+| **`food` 餐飲** | `#C38B8B` (玫瑰粉) | `#FAF1F1` | `#F5E3E3` | 溫暖且富有食慾，避開警告紅 |
+| **`buy` 購物** | `#524675` (灰調紫) | `#F5F3F9` | `#E7E3F0` | 時尚精品感，避開警告黃 |
+| **`flight` 航班** | `#A863A0` (洋紅紫) | `#F8F2F9` | `#EFE2F1` | 與後勤資訊同色系 |
+| **`hotel` 住宿** | `#726297` (紫羅蘭) | `#F4F3F7` | `#E6E3ED` | 溫馨雅緻，無壓迫感 |
+| **`booking` 預訂** | `#3B7A87` (青黛藍) | `#EEF5F6` | `#DCECEF` | 莫蘭迪藍綠色，非高亮科技藍 |
+| **`story` 故事** | `#57534E` (暖石灰) | `#FAFAF9` | `#EBEAE6` | 自然沉穩 |
+
+### 5.2 ⚠️ 警告區塊收斂 (Clean Notice UI)
+* 不論是 `danger` 或 `warning` 類型的 Notice 區塊，**底色一律收斂為淡米色 (`#FCF8F2`)**，去除大片紅色或黃色底色。
+* 僅透過文字顏色（特別重要：紅字 `#9B2C2C` / 一般注意：褐字 `#6B512C`）與驚嘆號顏色做細緻的級別區隔。
+
+### 5.3 季節漂浮動畫主題
+* **春季**：Sakura 粉色主題 + 🌸 飄落櫻花。
+* **秋季**：Autumn 橘色主題 + 🍁🍂 飄落楓葉。
+* 漂浮 span 數量限制為 6-7 個，確保效能與行動裝置流暢度。
