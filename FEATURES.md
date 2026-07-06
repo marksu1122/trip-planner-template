@@ -145,11 +145,112 @@ function toggleNotesCheck(id) {
 
 ---
 
-## 4. 📝 部署與自動化工作流
+## 4. 📊 資料結構與合約 (Data Structures & Contracts)
+
+本節定義行程網頁中所使用之 JavaScript 全域資料變數與 JSON 格式規格。
+
+### 4.1 行程事件格式 `itineraryData`
+
+```javascript
+const itineraryData = [
+  {
+    date: "YYYY-MM-DD",
+    title: "當天主標題",
+    tag: "城市/地區標籤",
+    weather: "⛅ 歷史均溫",  // API 讀取失敗時的備用靜態氣溫
+    events: [
+      {
+        time: "HH:MM",
+        type: "sight",     // sight (景點) / food (餐飲) / buy (購物) / booking (預訂) / transport (交通) / flight (航班) / hotel (住宿) / story (故事)
+        icon: "fas fa-...", // FontAwesome 圖示類名
+        title: "事件名稱",
+        desc: "詳細內容與建議遊玩時間",
+        badges: [
+          { cls: "sight", icon: "fa-ticket-alt", text: "標籤文字" }
+        ],
+        // 選用：警告/注意事項提醒框
+        notice: {
+          level: "danger", // danger (紅色字，特別重要) / warning (黃色字，一般警告)
+          icon: "fa-exclamation-triangle",
+          text: "提示標題",
+          warning: "具體提醒細節"
+        },
+        // 選用：展開式藍色攻略框
+        tip: {
+          title: "攻略標題 🗺️",
+          content: "HTML格式的文字（支援換行與粗體）"
+        }
+      }
+    ]
+  }
+];
+```
+
+### 4.2 購物清單格式 `shoppingList`
+
+```javascript
+const shoppingList = [
+  {
+    category: "💊 分類名稱",
+    color: "pink",          // 顏色鍵：pink / amber / purple / blue / green
+    items: []               // 預設為空，由使用者在前端動態新增
+  }
+];
+```
+
+### 4.3 行李清單格式 `luggageList`
+
+```javascript
+const luggageList = [
+  {
+    category: "📄 分類名稱",
+    color: "blue",          // 顏色鍵：blue / green / orange / red / purple / cyan
+    items: [                // 純字串陣列
+      "護照",
+      "保暖外套"
+    ]
+  }
+];
+```
+
+### 4.4 注意事項代辦清單格式 `notesChecklistData`
+
+```javascript
+const notesChecklistData = [
+  {
+    category: "🔴 超緊急（立刻辦！）",
+    color: "red",            // 顏色鍵：red / orange / amber / blue
+    items: [
+      {
+        id: "unique-id-01",  // 唯一辨識碼，用於 localStorage 保存狀態，不可重複
+        text: "辦理日文駕照譯本",
+        urgent: true         // 若為 true 則顯示「緊急」Badge
+      }
+    ]
+  }
+];
+```
+
+### 4.5 天氣城市座標對應 `dayCoordinates`
+
+```javascript
+const dayCoordinates = {
+  0: {                       // key = 第幾天（索引從 0 開始）
+    name: "別府",
+    lat: 33.2830,
+    lon: 131.4910,
+    tenkiUrl: "https://tenki.jp/forecast/9/43/8220/44202/" // 點擊天氣跳轉的連結
+  }
+};
+```
+
+---
+
+## 5. 📝 部署與自動化工作流
 
 本專案採 GitHub Pages 靜態網站代管，任何程式碼更新或行程變更，請依循以下部署方式：
 
-### 4.1 Git 手動部署
+### 5.1 Git 手動部署
 ```powershell
 git add .
 git commit -m "feat(itinerary): 異動內容描述"
@@ -157,5 +258,5 @@ git push
 ```
 GitHub Action 會自動觸發部署，約 **1-2 分鐘** 內生效。
 
-### 4.2 Python 行程更新腳本 (`replace_itinerary.py`)
+### 5.2 Python 行程更新腳本 (`replace_itinerary.py`)
 若行程資料過於龐大，可使用同目錄下的 Python 腳本，抽離 `itineraryData` 至獨立 json/js 檔案後，自動替換並推送到遠端倉庫。
